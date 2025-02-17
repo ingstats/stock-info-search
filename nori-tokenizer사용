@@ -1,0 +1,96 @@
+PUT card_info_nori_index
+{
+  "settings": {
+    "analysis": {
+      "char_filter": {
+        "html_strip": {
+          "type": "html_strip"
+        }
+      },
+      "tokenizer": {
+        "my_nori_tokenizer": {
+          "type": "nori_tokenizer",
+          "decompound_mode": "mixed", 
+          "user_dictionary_rules": [
+            "삼성전자", "현대자동차", "LG화학",
+            "반도체", "디스플레이", "배터리", "AI",
+            "보험", "대출", "연금", "ETF",
+            "갤럭시", "아이폰", "맥북", "테슬라"
+          ]
+        },
+        "edge_ngram_tokenizer": {
+          "type": "edge_ngram",
+          "min_gram": 2,
+          "max_gram": 10,
+          "token_chars": ["letter", "digit"]
+        }
+      },
+      "filter": {
+        "nori_posfilter": {
+          "type": "nori_part_of_speech",
+          "stoptags": [
+            "E", "IC", "J", "MAG", "MAJ", "MM",
+            "SP", "SSC", "SSO", "SC", "SE",
+            "XPN", "XSA", "XSN", "XSV",
+            "UNA", "NA", "VSV"
+          ]
+        },
+        "edge_ngram_filter": {
+          "type": "edge_ngram",
+          "min_gram": 2,
+          "max_gram": 10
+        }
+      },
+      "analyzer": {
+        "my_analyzer": {
+          "tokenizer": "my_nori_tokenizer",
+          "char_filter": ["html_strip"],
+          "filter": ["nori_posfilter", "nori_readingform", "nori_number"]
+        },
+        "edge_ngram_analyzer": {
+          "tokenizer": "edge_ngram_tokenizer",
+          "filter": ["lowercase"]
+        },
+        "korean_english_mixed": {
+          "tokenizer": "standard",
+          "filter": ["lowercase", "nori_readingform", "edge_ngram_filter"]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "category.condition": {
+        "type": "text",
+        "analyzer": "korean_english_mixed",
+        "search_analyzer": "my_analyzer"
+      },
+      "company": {
+        "type": "text",
+        "analyzer": "korean_english_mixed",
+        "search_analyzer": "my_analyzer"
+      },
+      "industry": {
+        "type": "text",
+        "analyzer": "korean_english_mixed",
+        "search_analyzer": "my_analyzer"
+      }
+    }
+  }
+}
+
+
+
+GET card_info_nori_index/_analyze
+{
+  "analyzer": "my_analyzer",
+  "text":"<p><strong>SKYPASS 마일리지 적립</strong></p><!-- 표1 --><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"b-table\" width=\"100%\"><tbody><tr><td class=\"b-table-top\" colspan=\"2\">구분</td><td class=\"b-table-top\" style=\"border-top: 1px solid #777;\">적립 마일</td><td class=\"b-table-top\" style=\"border-top: 1px solid #777;\">월 적립한도</td></tr><tr><td class=\"b-table\"><strong>기본</strong></td><td class=\"b-table-br\">국내외 가맹점</td><td align=\"center\">1마일</td><td align=\"center\">제한 없음</td></tr><tr><td class=\"b-table\"><strong>추가</strong></td><td class=\"b-table-br\">해외 가맹점</td><td align=\"center\">1마일</td><td align=\"center\">1천 마일</td></tr></tbody></table><p>- 추가 적립한도는 본인+가족카드 합산기준, 이를 초과한 금액은 기본 적립만 적용</p><p>- 이용금액 1천원당 SKYPASS 1마일리지 적립</p>",
+  "explain":true
+}
+
+GET card_info_nori_index/_search
+{
+  "query": {"match": {
+    "category.condition": "본인"
+  }}
+}
