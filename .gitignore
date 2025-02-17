@@ -1,0 +1,22 @@
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Python bytecode cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Jupyter Notebook 임시 파일들
+Untitled.ipynb
+Untitled1.ipynb
+Untitled2.ipynb
+
+# 로그 파일 및 기타 불필요한 파일
+*.log
+*.tmp
+*.swp
+.DS_Store
+
+# Elasticsearch 관련 임시 파일 (예: 실패한 문서)
+failed_documents.json
